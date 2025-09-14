@@ -1,12 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../app/generated/prisma"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -15,17 +9,16 @@ datasource db {
 }
 
 model User {
-  id             String    @id @default(uuid())
-  f_user_id      String    @unique
-  email          String    @unique
-  email_verified Boolean
-  picture        String?
-  name           String?
-  role           Role      @default(USER)
-  lastSignedIn   DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-
+  id              String     @id @default(uuid())
+  f_user_id       String     @unique
+  email           String     @unique
+  email_verified  Boolean
+  picture         String?
+  name            String?
+  role            Role       @default(USER)
+  lastSignedIn    DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
   listings        Listings[]
   reviewsWritten  Review[]   @relation("ReviewsWritten")
   reviewsReceived Review[]   @relation("ReviewsReceived")
@@ -34,104 +27,54 @@ model User {
 }
 
 model Locality {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  slug      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  listings Listings[]
+  id        String     @id @default(uuid())
+  name      String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  slug      String     @unique
+  listings  Listings[]
 }
 
 model Review {
-  id        String   @id @default(uuid())
-  rating    Int
-  comment   String?
-  createdAt DateTime @default(now())
-
-  authorId String
-  author   User   @relation("ReviewsWritten", fields: [authorId], references: [id])
-
+  id         String   @id @default(uuid())
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+  authorId   String
   revieweeId String
-  reviewee   User   @relation("ReviewsReceived", fields: [revieweeId], references: [id])
+  author     User     @relation("ReviewsWritten", fields: [authorId], references: [id])
+  reviewee   User     @relation("ReviewsReceived", fields: [revieweeId], references: [id])
 }
 
 model Listings {
-  // General Shared/Private Room Listing Info
-  id             String      @id @default(uuid())
-  title          String
-  description    String?
-  price          Float
-  images         String[]
-  available_from DateTime
-  street_name    String
-  listingType    ListingType
-  ensuite        Boolean     @default(false)
-
-  // Contact Information
+  id                     String           @id @default(uuid())
+  title                  String
+  description            String?
+  price                  Float
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+  street_name            String
+  userId                 String
+  images                 String[]
+  available_from         DateTime
+  ensuite                Boolean          @default(false)
+  listingType            ListingType
+  maxGuestsInRoom        Int              @default(1)
+  totalBathrooms         Int
+  totalBedrooms          Int
+  totalOccupants         Int
+  localitySlug           String
   contactNumber          String?
-  contactNumberExtension String? // e.g., "+356" for Malta
-
-  // Details about the property
-  totalBedrooms   Int
-  totalBathrooms  Int
-  totalOccupants  Int
-  maxGuestsInRoom Int @default(1)
-
-  // Timestamps
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
-  localitySlug String
-  locality     Locality @relation(fields: [localitySlug], references: [slug])
-
-  amenities    ListingAmenity[]
-  valueHistory ListingValueHistory[]
-
-  @@index([createdAt])
-  @@index([localitySlug])
-  @@index([listingType])
-}
-
-model ListingValueHistory {
-  id        String   @id @default(uuid())
-  listingId String
-  listing   Listings @relation(fields: [listingId], references: [id], onDelete: Cascade)
-
-  // Value metrics
-  valueScore Float // The calculated value score (1-10)
-  price      Float // The price at this point in time
-
-  // Context for the score calculation
-  listingType  ListingType
-  ensuite      Boolean
-  maxGuests    Int // maxGuestsInRoom at this time
-  amenityCount Int // Number of amenities at this time
-
-  // Locality for trend analysis
-  localitySlug String
-
-  // Timestamp
-  createdAt DateTime @default(now())
-
-  // Indexes for efficient querying
-  @@index([listingId])
-  @@index([localitySlug])
-  @@index([createdAt])
-  @@index([valueScore])
-  @@index([listingType, createdAt])
-  @@index([localitySlug, createdAt])
+  contactNumberExtension String?
+  amenities              ListingAmenity[]
+  locality               Locality         @relation(fields: [localitySlug], references: [slug])
+  user                   User             @relation(fields: [userId], references: [id])
 }
 
 model Amenity {
-  id    Int    @id @default(autoincrement())
-  slug  String @unique
-  label String
-
+  slug     String           @unique
+  label    String
+  id       Int              @id @default(autoincrement())
   listings ListingAmenity[]
 
   @@index([slug])
@@ -139,10 +82,9 @@ model Amenity {
 
 model ListingAmenity {
   listingId String
-  listing   Listings @relation(fields: [listingId], references: [id], onDelete: Cascade)
-
   amenityId Int
-  amenity   Amenity @relation(fields: [amenityId], references: [id])
+  amenity   Amenity  @relation(fields: [amenityId], references: [id])
+  listing   Listings @relation(fields: [listingId], references: [id], onDelete: Cascade)
 
   @@id([listingId, amenityId])
   @@index([listingId])

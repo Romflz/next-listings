@@ -7,6 +7,7 @@ import { mapFirebaseError } from '../utils/firebaseErrors'
 import { validateLoginRegisterForm } from '../utils/validateForm'
 import { signInWithGoogle, signInWithEmail, createAccount } from '../utils/firebaseLogin'
 import LoginForm from './LoginForm'
+import { login } from '../server/auth'
 
 interface FormData {
   email: string
@@ -21,38 +22,6 @@ interface UserProfile {
   uid: string
   emailVerified: boolean
   picture?: string
-}
-
-// Direct client-side function using the reverse proxy
-async function exchangeTokenForSession(idToken: string) {
-  try {
-    const response = await fetch('/api/login', {
-      method: 'POST',
-      credentials: 'include', // Browser handles cookies automatically
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ token: idToken }),
-    })
-
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.error || 'Login failed')
-    }
-
-    const userData: UserProfile = await response.json()
-
-    // Cookie is automatically set by browser from backend's Set-Cookie header
-    // No manual handling needed thanks to the reverse proxy
-
-    return { success: true, user: userData }
-  } catch (error) {
-    console.error('Token exchange error:', error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to exchange token',
-    }
-  }
 }
 
 export default function LoginView() {
@@ -92,7 +61,7 @@ export default function LoginView() {
       }
 
       // Exchange token for session using reverse proxy
-      const result = await exchangeTokenForSession(authResult.idToken)
+      const result = await login(authResult.idToken)
 
       if (result.success) {
         setSuccessMessage(isLoginMode ? 'Successfully logged in!' : 'Account created successfully!')
@@ -124,7 +93,7 @@ export default function LoginView() {
       }
 
       // Exchange token for session using reverse proxy
-      const result = await exchangeTokenForSession(authResult.idToken)
+      const result = await login(authResult.idToken)
 
       if (result.success) {
         setSuccessMessage('Successfully logged in with Google!')

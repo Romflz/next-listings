@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String     @id @default(uuid())
+  f_user_id       String     @unique
+  email           String     @unique
+  email_verified  Boolean
+  picture         String?
+  name            String?
+  role            Role       @default(USER)
+  lastSignedIn    DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  listings        Listings[]
+  reviewsWritten  Review[]   @relation("ReviewsWritten")
+  reviewsReceived Review[]   @relation("ReviewsReceived")
+
+  @@index([f_user_id])
+}
+
+model Locality {
+  id        String     @id @default(uuid())
+  name      String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  slug      String     @unique
+  listings  Listings[]
+}
+
+model Review {
+  id         String   @id @default(uuid())
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+  authorId   String
+  revieweeId String
+  author     User     @relation("ReviewsWritten", fields: [authorId], references: [id])
+  reviewee   User     @relation("ReviewsReceived", fields: [revieweeId], references: [id])
+}
+
+model Listings {
+  id                     String           @id @default(uuid())
+  title                  String
+  description            String?
+  price                  Float
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+  street_name            String
+  userId                 String
+  images                 String[]
+  available_from         DateTime
+  ensuite                Boolean          @default(false)
+  listingType            ListingType
+  maxGuestsInRoom        Int              @default(1)
+  totalBathrooms         Int
+  totalBedrooms          Int
+  totalOccupants         Int
+  localitySlug           String
+  contactNumber          String?
+  contactNumberExtension String?
+  amenities              ListingAmenity[]
+  locality               Locality         @relation(fields: [localitySlug], references: [slug])
+  user                   User             @relation(fields: [userId], references: [id])
+}
+
+model Amenity {
+  slug     String           @unique
+  label    String
+  id       Int              @id @default(autoincrement())
+  listings ListingAmenity[]
+
+  @@index([slug])
+}
+
+model ListingAmenity {
+  listingId String
+  amenityId Int
+  amenity   Amenity  @relation(fields: [amenityId], references: [id])
+  listing   Listings @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@id([listingId, amenityId])
+  @@index([listingId])
+  @@index([amenityId])
+}
+
+enum ListingType {
+  PRIVATE_ROOM
+  SHARED_ROOM
+}
+
+enum Role {
+  USER
+  ADMIN
+  MODERATOR
+}
