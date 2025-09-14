@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { type QuickFilter, quickFilters } from '../constants/quickFilters'
 
 interface SearchParams {
   location: string
@@ -12,40 +13,8 @@ interface SearchParams {
   [key: string]: string | boolean | number // for dynamic amenity filters
 }
 
-interface QuickFilter {
-  id: number
-  label: string
-  icon: string
-  filter: Record<string, boolean>
-}
-
 export default function Hero() {
   const router = useRouter()
-
-  const quickFilters: QuickFilter[] = [
-    // Essential utilities & costs
-    { id: 1, label: 'Bills Included', icon: '💡', filter: { billsIncluded: true } },
-    { id: 2, label: 'WiFi', icon: '📶', filter: { wifi: true } },
-
-    // Living arrangements
-    { id: 5, label: 'Private Bathroom', icon: '🚿', filter: { ensuiteBathroom: true } },
-    { id: 6, label: 'Kitchen Access', icon: '🍳', filter: { kitchen: true } },
-
-    // Policies & lifestyle
-    { id: 7, label: 'Pet Friendly', icon: '🐕', filter: { petFriendly: true } },
-    { id: 8, label: 'Couples Welcome', icon: '❤️', filter: { couples: true } },
-    { id: 9, label: 'Student Friendly', icon: '🎓', filter: { studentFriendly: true } },
-
-    // Essential appliances
-    { id: 12, label: 'Washing Machine', icon: '🧺', filter: { washingMachine: true } },
-    { id: 13, label: 'Air Conditioning', icon: '❄️', filter: { airConditioning: true } },
-
-    // Outdoor & extras
-    { id: 14, label: 'Balcony/Terrace', icon: '🌿', filter: { balcony: true } },
-
-    // Accessibility & convenience
-    { id: 17, label: 'Elevator', icon: '🛗', filter: { elevator: true } },
-  ]
 
   // -----------------------------
   // React replacement for v-model
@@ -101,8 +70,15 @@ export default function Hero() {
   }
 
   return (
-    <section className="relative overflow-hidden rounded-2xl max-w-7xl mx-auto">
-      <div className="relative z-10 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lg:pt-32 lg:pb-24 rounded-2xl">
+    <section className="relative overflow-hidden max-w-7xl mx-auto bg-white hero-header">
+      <div
+        className="relative z-10 pb-16 pt-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lg:pt-32 lg:pb-24 rounded-b-2xl lg:rounded-2xl"
+        style={{
+          backgroundImage: `radial-gradient(ellipse at center, rgba(99, 102, 241, 0.3), rgba(30, 41, 59, 0.8)), url('/images/cozyRoom.png')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
         <div className="max-w-5xl mx-auto animate-fade-in-up animation-delay-200">
           <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 p-6 lg:p-8">
             {/* Mobile form */}
@@ -116,10 +92,6 @@ export default function Hero() {
                   placeholder="City, neighborhood, or address"
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                 />
-                <svg className="absolute right-3 top-11 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
               </div>
 
               <div>
@@ -253,7 +225,7 @@ export default function Hero() {
 
           {/* Quick filters */}
           <div className="mt-8">
-            <h3 className="font-semibold text-gray-800 text-center mb-4 px-4">Popular Amenities</h3>
+            <h3 className="font-semibold text-white text-center mb-4 px-4">Popular Amenities</h3>
             <div
               className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 lg:flex-wrap lg:justify-center lg:overflow-x-visible lg:pb-0"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
